@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "building": {
+    "id": "BUILDING_01",
+    "name": "Main Building",
+    "floor": 1
+  },
+  "map": {
+    "image": "assets/maps/floor1.png",
+    "width": 3000,
+    "height": 3000
+  },
+  "rooms": [
+  {
+    "id": "R1",
+    "name": "PG Diploma"
+  },
+  {
+    "id": "R2",
+    "name": "Gents Toilet"
+  },
+  {
+    "id": "R3",
+    "name": "Toilet (PH)"
+  },
+  {
+    "id": "R4",
+    "name": "Research Lab 2"
+  },
+  {
+    "id": "R5",
+    "name": "Tutorial Room"
+  },
+  {
+    "id": "R6",
+    "name": "Conference Room"
+  },
+  {
+    "id": "R7",
+    "name": "Staff Toilet (Gents & Ladies)"
+  },
+  {
+    "id": "R8",
+    "name": "Faculty Chamber 1"
+  },
+  {
+    "id": "R9",
+    "name": "Faculty Chamber 2"
+  },
+  {
+    "id": "R10",
+    "name": "Faculty Chamber 3"
+  },
+  {
+    "id": "R11",
+    "name": "Faculty Chamber 4"
+  },
+  {
+    "id": "R12",
+    "name": "Artificial Intelligence Lab"
+  },
+  {
+    "id": "R13",
+    "name": "Signal and Image Processing Lab"
+  },
+  {
+    "id": "R14",
+    "name": "Data Science Lab"
+  },
+  {
+    "id": "R15",
+    "name": "Lift"
+  },
+  {
+    "id": "R16",
+    "name": "Facilities Room"
+  },
+  {
+    "id": "R17",
+    "name": "Ladies Toilet"
+  },
+  {
+    "id": "R18",
+    "name": "Library Dept. of IT"
+  },
+  {
+    "id": "R19",
+    "name": "MCA I"
+  },
+  {
+    "id": "R20",
+    "name": "MCA II"
+  },
+  {
+    "id": "R21",
+    "name": "II M.Sc. (Computer Science)"
+  }
+],
+  "nodes": [
+    {
+      "id": "N1",
+      "x": 912.8,
+      "y": 430.0,
+      "rooms": ["R3","R4"]
+    },
+    {
+      "id": "N2",
+      "x": 674.0,
+      "y": 430.0,
+      "rooms": ["R2","R1"]
+    },
+    {
+      "id": "N3",
+      "x": 674.0,
+      "y": 854.8,
+      "rooms": ["R5"]
+    },
+    {
+      "id": "N4",
+      "x": 674.0,
+      "y": 1214.9,
+      "rooms": ["R12","R6"]
+    },
+    {
+      "id": "N5",
+      "x": 674.0,
+      "y": 1491.6,
+      "rooms": ["R7","R13"]
+    },
+    {
+      "id": "N6",
+      "x": 674.0,
+      "y": 1848.0,
+      "rooms": []
+    },
+    {
+      "id": "N7",
+      "x": 421.8,
+      "y": 1848.0,
+      "rooms": ["R8","R9","R10","R11"]
+    },
+    {
+      "id": "N8",
+      "x": 674.0,
+      "y": 2018.9,
+      "rooms": []
+    },
+    {
+      "id": "N9",
+      "x": 762.3,
+      "y": 2195.5,
+      "rooms": []
+    },
+    {
+      "id": "N10",
+      "x": 1018.9,
+      "y": 2195.5,
+      "rooms": ["R15","R19"]
+    },
+    {
+      "id": "N11",
+      "x": 1490.6,
+      "y": 2195.5,
+      "rooms": ["R20","R14"]
+    },
+    {
+      "id": "N12",
+      "x": 2034.4,
+      "y": 2195.5,
+      "rooms": ["R21"]
+    },
+    {
+      "id": "N13",
+      "x": 2417.0542817160076,
+      "y": 2195.5,
+      "rooms": ["R18"]
+    },
+    {
+      "id": "N14",
+      "x": 2417.1,
+      "y": 1605.0,
+      "rooms": []
+    },
+    {
+      "id": "N15",
+      "x": 2580.0,
+      "y": 1605.0,
+      "rooms": ["R16","R17"]
+    }
+],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2"
+    },
+    {
+      "from": "N2",
+      "to": "N3"
+    },
+    {
+      "from": "N3",
+      "to": "N4"
+    },
+    {
+      "from": "N4",
+      "to": "N5"
+    },
+    {
+      "from": "N5",
+      "to": "N6"
+    },
+    {
+      "from": "N6",
+      "to": "N8"
+    },
+    {
+      "from": "N8",
+      "to": "N9"
+    },
+    {
+      "from": "N9",
+      "to": "N10"
+    },
+    {
+      "from": "N10",
+      "to": "N11"
+    },
+    {
+      "from": "N11",
+      "to": "N12"
+    },
+    {
+      "from": "N12",
+      "to": "N13"
+    },
+    {
+      "from": "N13",
+      "to": "N14"
+    },
+    {
+      "from": "N14",
+      "to": "N15"
+    },
+    {
+      "from": "N6",
+      "to": "N7"
+    }
+  ],
+  "beacons": [
+    {
+      "id": "B1",
+      "name": "Beacon 1",
+      "mac": "79:80:9C:20:8A:34",
+      "x": 588.1268031947585,
+      "y": 450.9131412016348,
+      "range": 6.0,
+      "nodeId": "N2"
+    },
+    {
+      "id": "B2",
+      "name": "Beacon 2",
+      "mac": "36:78:A9:FE:74:96",
+      "x": 761.5340397811992,
+      "y": 1353.2323926713877,
+      "range": 6.0,
+      "nodeId": "N5"
+    },
+    {
+      "id": "B3",
+      "name": "Beacon 3",
+      "mac": "19:B4:91:37:1C:CC",
+      "x": 582.3471424117482,
+      "y": 1769.8138654778713,
+      "range": 3.5,
+      "nodeId": "N6"
+    },
+    {
+      "id": "B4",
+      "name": "Esp32",
+      "mac": "30:76:F5:60:21:9A",
+      "x": 923.2383797140109,
+      "y": 2208.196154160987,
+      "range": 4.5,
+      "nodeId": "N10"
+    },
+    {
+      "id": "B5",
+      "name": "Beacon 5",
+      "mac": "72:97:19:25:D8:F4",
+      "x": 2433.4301326134873,
+      "y": 2180.883058814693,
+      "range": 6.0,
+      "nodeId": "N13"
+    },
+    {
+      "id": "B6",
+      "name": "Beacon 6",
+      "mac": "57:10:02:18:F5:ED",
+      "x": 2580.9820212447453,
+      "y": 1585.2680560549181,
+      "range": 6.0,
+      "nodeId": "N15"
+    },
+    {
+      "id": "B7",
+      "name": "Beacon 7",
+      "mac": "00:06:AE:B5:5A:9D",
+      "x": 1670.7908292920647,
+      "y": 2112.5297630460186,
+      "range": 4.5,
+      "nodeId": "N11"
+    }
+  ]
+}
