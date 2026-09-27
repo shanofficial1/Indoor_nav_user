@@ -12,6 +12,9 @@ import 'services/rssi_filter_service.dart';
 import 'widgets/indoor_map.dart';
 import 'screens/destination_search_page.dart';
 
+
+import 'services/graph_position_service.dart';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -60,6 +63,14 @@ class _HomePageState extends State<HomePage> {
       RssiFilterService(
     maxSamples: 10,
   );
+  final GraphPositionService _graphPositionService =
+    GraphPositionService(
+  txPower: -59.0,
+  pathLossExponent: 2.0,
+);
+
+
+
 
   StreamSubscription<List<ScanResult>>?
       _bleSubscription;
@@ -68,14 +79,16 @@ class _HomePageState extends State<HomePage> {
 
   String? error;
 
-  // Current node detected from BLE.
   String? currentNodeId;
+String? currentBeaconId;
+double? currentRssi;
+Offset? currentPosition;
 
-  // Current strongest beacon.
-  String? currentBeaconId;
+String? positionBeaconA;
+String? positionBeaconB;
 
-  // Current RSSI.
-  double? currentRssi;
+double? distanceFromBeaconA;
+double? distanceFromBeaconB;
 
   // Destination node.
 String? destinationNodeId;
@@ -149,113 +162,198 @@ List<String> currentRoute = [];
     }
   }
 
-  void _processBleResults(
-    List<ScanResult> results,
-  ) {
-    final appConfig = config;
+void _processBleResults(
+  List<ScanResult> results,
+) {
+  final appConfig = config;
 
-    if (appConfig == null) {
-      return;
+  if (appConfig == null) {
+    return;
+  }
+
+  // ---------------------------------------------
+  // 1. Collect filtered RSSI from configured
+  //    beacons
+  // ---------------------------------------------
+
+  for (final result in results) {
+    final mac = result.device.remoteId.str;
+
+    final configuredBeacon =
+        appConfig.beacons.where(
+      (beacon) =>
+          beacon.mac.toUpperCase() ==
+          mac.toUpperCase(),
+    );
+
+    if (configuredBeacon.isEmpty) {
+      continue;
     }
 
-    for (final result in results) {
-      final mac =
-          result.device.remoteId.str;
+    final filtered =
+        _rssiFilter.addSample(
+      mac,
+      result.rssi,
+    );
 
-      // Check whether this is one of our
-      // configured beacons.
-      final configuredBeacon =
-          appConfig.beacons.where(
-        (beacon) =>
-            beacon.mac.toUpperCase() ==
-            mac.toUpperCase(),
-      );
+    _filteredRssi[mac] = filtered;
 
-      if (configuredBeacon.isEmpty) {
-        continue;
-      }
+    debugPrint(
+      'POSITION BLE | '
+      'MAC: $mac | '
+      'RAW: ${result.rssi} | '
+      'FILTERED: '
+      '${filtered.toStringAsFixed(1)}',
+    );
+  }
 
-      // Add raw RSSI to moving average.
-      final filtered =
-          _rssiFilter.addSample(
-        mac,
-        result.rssi,
-      );
+  if (_filteredRssi.isEmpty) {
+    return;
+  }
 
-      _filteredRssi[mac] = filtered;
+  // ---------------------------------------------
+  // 2. NAVIGATION MODE
+  // ---------------------------------------------
 
-      debugPrint(
-        'POSITION BLE | '
-        'MAC: $mac | '
-        'RAW: ${result.rssi} | '
-        'FILTERED: ${filtered.toStringAsFixed(1)}',
-      );
-    }
+/*
+==============================================================
+GRAPH POSITIONING
 
-    if (_filteredRssi.isEmpty) {
-      return;
-    }
+This ALWAYS runs.
 
-    // Find strongest beacon.
-    String? strongestMac;
-    double? strongestRssi;
+No destination is required.
 
-    for (final entry
-        in _filteredRssi.entries) {
-      if (strongestRssi == null ||
-          entry.value > strongestRssi) {
-        strongestMac = entry.key;
-        strongestRssi = entry.value;
-      }
-    }
+If destination exists:
+    position is constrained to navigation route.
 
-   if (strongestMac == null || strongestRssi == null) {
+If destination does not exist:
+    position is constrained to the complete building graph.
+==============================================================
+*/
+
+final estimate =
+    _graphPositionService.calculate(
+  appConfig,
+  destinationNodeId != null
+      ? currentRoute
+      : const [],
+  _filteredRssi,
+);
+
+if (estimate != null) {
+  final oldNodeId =
+      currentNodeId;
+
+  if (!mounted) {
+    return;
+  }
+
+  setState(() {
+    currentPosition =
+        estimate.position;
+
+    currentNodeId =
+        estimate.nearestNodeId;
+
+    currentBeaconId =
+        estimate.beaconAId;
+
+    currentRssi =
+        _filteredRssi[
+          appConfig.beacons
+              .firstWhere(
+                (beacon) =>
+                    beacon.id ==
+                    estimate.beaconAId,
+              )
+              .mac
+        ];
+  });
+
+  debugPrint(
+    'FINAL USER POSITION | '
+    'X=${estimate.position.dx.toStringAsFixed(1)} '
+    'Y=${estimate.position.dy.toStringAsFixed(1)} '
+    'NODE=${estimate.nearestNodeId}',
+  );
+
+  /*
+    If the user crossed into another graph node
+    while navigating, update the remaining route.
+  */
+  if (destinationNodeId != null &&
+      estimate.nearestNodeId != null &&
+      estimate.nearestNodeId != oldNodeId) {
+    _calculateRoute();
+  }
+
   return;
 }
 
-final strongestBeacon =
-    appConfig.beacons.where(
-  (beacon) =>
-      beacon.mac.toUpperCase() ==
-      strongestMac!.toUpperCase(),
-);
+  // ---------------------------------------------
+  // 3. NO NAVIGATION
+  //
+  // Keep the old strongest-beacon behavior.
+  // ---------------------------------------------
 
-    if (strongestBeacon.isEmpty) {
-      return;
-    }
+  String? strongestMac;
+  double? strongestRssi;
 
-    final beacon =
-        strongestBeacon.first;
-
-    final newNodeId = beacon.nodeId;
-
-    if (newNodeId == null) {
-      return;
-    }
-
-    // Update only when necessary.
-    if (mounted) {
-      setState(() {
-        currentBeaconId = beacon.id;
-        currentNodeId = newNodeId;
-        currentRssi = strongestRssi;
-      });
-    }
-
-    debugPrint(
-      'CURRENT POSITION | '
-      'BEACON: ${beacon.id} | '
-      'NODE: $newNodeId | '
-      'RSSI: ${strongestRssi.toStringAsFixed(1)}',
-    );
-
-    // If a destination has already been selected,
-    // recalculate route from the new current node.
-    if (destinationNodeId != null) {
-      _calculateRoute();
+  for (final entry
+      in _filteredRssi.entries) {
+    if (strongestRssi == null ||
+        entry.value > strongestRssi) {
+      strongestMac = entry.key;
+      strongestRssi = entry.value;
     }
   }
 
+  if (strongestMac == null ||
+      strongestRssi == null) {
+    return;
+  }
+
+  final strongestBeacon =
+      appConfig.beacons.where(
+    (beacon) =>
+        beacon.mac.toUpperCase() ==
+        strongestMac!.toUpperCase(),
+  );
+
+  if (strongestBeacon.isEmpty) {
+    return;
+  }
+
+  final beacon =
+      strongestBeacon.first;
+
+  final newNodeId =
+      beacon.nodeId;
+
+  if (newNodeId == null) {
+    return;
+  }
+
+  if (!mounted) {
+    return;
+  }
+
+
+
+  debugPrint(
+    'CURRENT POSITION | '
+    'BEACON: ${beacon.id} | '
+    'NODE: $newNodeId | '
+    'RSSI: '
+    '${strongestRssi.toStringAsFixed(1)}',
+  );
+
+  if (destinationNodeId != null) {
+    _calculateRoute();
+  }
+}
+  
+  
   void _calculateRoute() {
     if (config == null) {
       return;
@@ -348,6 +446,18 @@ destinationName = selectedDestination.name;
     // Calculate route from CURRENT BLE NODE.
     _calculateRoute();
   }
+  void _stopNavigation() {
+  if (!mounted) return;
+
+  setState(() {
+    destinationNodeId = null;
+    destinationName = null;
+    currentRoute = [];
+  });
+
+  debugPrint('NAVIGATION STOPPED');
+}
+
 
   @override
   void dispose() {
@@ -425,11 +535,12 @@ destinationName = selectedDestination.name;
       body: Stack(
         children: [
           // MAP
-          IndoorMap(
-            config: config!,
-            route: currentRoute,
-            currentNodeId: currentNodeId,
-          ),
+  IndoorMap(
+  config: config!,
+  route: currentRoute,
+  currentNodeId: currentNodeId,
+  currentPosition: currentPosition,
+),
 
           // SEARCH BUTTON
           Positioned(
@@ -504,6 +615,11 @@ else if (currentRoute.isNotEmpty)
                 ],
               ),
             ),
+            IconButton(
+  onPressed: _stopNavigation,
+  icon: const Icon(Icons.close),
+  tooltip: 'Stop Navigation',
+),
             if (currentRssi != null)
               Text(
                 '${currentRssi!.toStringAsFixed(0)} dBm',
@@ -512,6 +628,7 @@ else if (currentRoute.isNotEmpty)
                 ),
               ),
           ],
+        
         ),
       ),
     ),

@@ -3,15 +3,18 @@ import 'package:flutter/material.dart';
 import '../models/building_config.dart';
 import 'navigation_map_painter.dart';
 
+
 class IndoorMap extends StatelessWidget {
   final BuildingConfig config;
   final List<String> route;
 final String? currentNodeId;
+final Offset? currentPosition;
 const IndoorMap({
   super.key,
   required this.config,
   this.route = const [],
   this.currentNodeId,
+  this.currentPosition,
 });
 
   // Actual floor-plan PNG dimensions.
@@ -61,6 +64,7 @@ const IndoorMap({
   config: config,
   route: route,
   currentNodeId: currentNodeId,
+  currentPosition: currentPosition,
 ),
                   ),
                 ],

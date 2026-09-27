@@ -7,12 +7,13 @@ class NavigationMapPainter extends CustomPainter {
   final BuildingConfig config;
   final List<String> route;
 final String? currentNodeId;
-
-  NavigationMapPainter({
-    required this.config,
-    required this.route,
-    this.currentNodeId,
-  });
+final Offset? currentPosition;
+NavigationMapPainter({
+  required this.config,
+  required this.route,
+  this.currentNodeId,
+  this.currentPosition,
+});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -76,42 +77,27 @@ final String? currentNodeId;
         nodeBorderPaint,
       );
     }
-    if (currentNodeId != null) {
-  final currentNode = config.nodes.where(
-    (node) => node.id == currentNodeId,
+if (currentPosition != null) {
+  final x =
+      currentPosition!.dx * scaleX;
+
+  final y =
+      currentPosition!.dy * scaleY;
+
+  final point =
+      Offset(x, y);
+
+
+  final bluePaint = Paint()
+    ..color = Colors.blue
+    ..style = PaintingStyle.fill;
+
+
+  canvas.drawCircle(
+    point,
+    6,
+    bluePaint,
   );
-
-  if (currentNode.isNotEmpty) {
-    final node = currentNode.first;
-
-    final currentX =
-        node.position.dx * scaleX;
-
-    final currentY =
-        node.position.dy * scaleY;
-
-    final locationPaint = Paint()
-      ..color = Colors.blue
-      ..style = PaintingStyle.fill;
-
-    final outerPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-
-    // White border
-    // canvas.drawCircle(
-    //   Offset(currentX, currentY),
-    //   1,
-    //   outerPaint,
-    // );
-
-    // Blue current location
-    canvas.drawCircle(
-      Offset(currentX, currentY),
-      6,
-      locationPaint,
-    );
-  }
 }
   }
 
