@@ -78,10 +78,9 @@ class _HomePageState extends State<HomePage> {
   double? currentRssi;
 
   // Destination node.
-  String? destinationNodeId;
-
-  // Calculated route.
-  List<String> currentRoute = [];
+String? destinationNodeId;
+String? destinationName;
+List<String> currentRoute = [];
 
   // Filtered RSSI for each beacon.
   final Map<String, double> _filteredRssi = {};
@@ -335,7 +334,7 @@ final strongestBeacon =
 
     destinationNodeId =
         destinationNode.id;
-
+destinationName = selectedDestination.name;
     debugPrint(
       'DESTINATION: '
       '${selectedDestination.name}',
@@ -451,63 +450,72 @@ final strongestBeacon =
 
           // CURRENT POSITION CARD
           if (currentNodeId != null)
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 16,
-              child: Card(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.my_location,
-                        color: Colors.blue,
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment
-                                  .start,
-                          children: [
-                            const Text(
-                              'Current Position',
-                              style:
-                                  TextStyle(
-                                fontWeight:
-                                    FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Node: $currentNodeId',
-                            ),
-                            if (currentBeaconId !=
-                                null)
-                              Text(
-                                'Beacon: '
-                                '$currentBeaconId',
-                              ),
-                          ],
-                        ),
-                      ),
-                      if (currentRssi != null)
-                        Text(
-                          '${currentRssi!.toStringAsFixed(0)} dBm',
-                          style:
-                              const TextStyle(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
-                        ),
-                    ],
+  Positioned(
+    left: 16,
+    right: 16,
+    bottom: 16,
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.my_location,
+              color: Colors.blue,
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Current Position',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
+                  Text(
+                    'Node: $currentNodeId',
+                  ),
+                  if (currentBeaconId != null)
+                    Text(
+                      'Beacon: $currentBeaconId',
+                    ),
+                  if (destinationName != null)
+                    Text(
+                      'Destination: $destinationName',
+                    ),
+                 if (currentRoute.isNotEmpty &&
+    currentRoute.length == 1)
+  const Text(
+    '🏁 You have arrived!',
+    style: TextStyle(
+      color: Colors.green,
+      fontWeight: FontWeight.bold,
+    ),
+  )
+else if (currentRoute.isNotEmpty)
+  Text(
+    '${currentRoute.length - 1} nodes remaining',
+  ),
+                ],
               ),
             ),
+            if (currentRssi != null)
+              Text(
+                '${currentRssi!.toStringAsFixed(0)} dBm',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  ),
         ],
       ),
     );
