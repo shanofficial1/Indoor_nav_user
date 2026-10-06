@@ -8,7 +8,8 @@
   "map": {
     "image": "assets/maps/floor1.png",
     "width": 3000,
-    "height": 3000
+    "height": 3000,
+    "lengthMeters": 40.5
   },
   "rooms": [
   {
@@ -295,7 +296,7 @@
     {
       "id": "B6",
       "name": "Beacon 6",
-      "mac": "57:10:02:18:F5:ED",
+      "mac": "6B:EA:62:E8:B7:CB",
       "x": 2580.9820212447453,
       "y": 1585.2680560549181,
       "range": 6.0,

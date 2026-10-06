@@ -11,8 +11,9 @@ class BuildingConfig {
   final int floor;
 
   final String mapImage;
-  final double mapWidth;
-  final double mapHeight;
+final double mapWidth;
+final double mapHeight;
+final double mapLengthMeters;
 
 final List<NavigationNode> nodes;
 final List<NavigationEdge> edges;
@@ -25,8 +26,9 @@ final List<Destination> rooms;
     required this.buildingName,
     required this.floor,
     required this.mapImage,
-    required this.mapWidth,
-    required this.mapHeight,
+required this.mapWidth,
+required this.mapHeight,
+required this.mapLengthMeters,
     required this.nodes,
     required this.edges,
     required this.beacons,
@@ -45,8 +47,10 @@ final List<Destination> rooms;
       floor: building['floor'] as int,
 
       mapImage: map['image'] as String,
-      mapWidth: (map['width'] as num).toDouble(),
-      mapHeight: (map['height'] as num).toDouble(),
+   mapWidth: (map['width'] as num).toDouble(),
+mapHeight: (map['height'] as num).toDouble(),
+mapLengthMeters:
+    (map['lengthMeters'] as num).toDouble(),
 
       nodes: (json['nodes'] as List)
           .map(

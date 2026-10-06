@@ -182,7 +182,8 @@ class GraphPositionService {
         distanceFromBeaconA: distanceA,
         distanceFromBeaconB: 0,
         routeDistance:
-            projection.distanceAlongGraph,
+    projection.distanceAlongGraph /
+    (config.mapWidth / config.mapLengthMeters),
       );
     }
 
@@ -300,7 +301,8 @@ class GraphPositionService {
       distanceFromBeaconA: distanceA,
       distanceFromBeaconB: distanceB,
       routeDistance:
-          projection.distanceAlongGraph,
+          projection.distanceAlongGraph /
+          (config.mapWidth / config.mapLengthMeters),
     );
   }
 
@@ -318,6 +320,69 @@ class GraphPositionService {
       use ONLY edges connecting consecutive
       nodes in the current route.
   */
+
+
+Offset constrainPositionToGraph(
+  BuildingConfig config,
+  List<String> route,
+  Offset position,
+) {
+  final allowedEdges = _buildAllowedEdges(
+    config,
+    route,
+  );
+
+  if (allowedEdges.isEmpty) {
+    return position;
+  }
+
+  final projection = _nearestPointOnGraph(
+    position,
+    allowedEdges,
+  );
+
+  return projection?.point ?? position;
+}
+
+double calculateRouteLength(
+  BuildingConfig config,
+  List<String> route,
+) {
+  if (route.length < 2) {
+    return 0;
+  }
+
+  double totalDistance = 0;
+
+  for (int i = 0; i < route.length - 1; i++) {
+    final fromId = route[i];
+    final toId = route[i + 1];
+
+    final fromNodes = config.nodes.where(
+      (node) => node.id == fromId,
+    );
+
+    final toNodes = config.nodes.where(
+      (node) => node.id == toId,
+    );
+
+    if (fromNodes.isEmpty || toNodes.isEmpty) {
+      continue;
+    }
+    final pixelsPerMeter =
+    config.mapWidth / config.mapLengthMeters;
+
+
+   totalDistance +=
+    (toNodes.first.position -
+            fromNodes.first.position)
+        .distance /
+    pixelsPerMeter;
+  }
+
+  return totalDistance;
+}
+
 
   List<_GraphEdge> _buildAllowedEdges(
     BuildingConfig config,
@@ -512,18 +577,18 @@ class GraphPositionService {
                 edge.from)
             .distance;
 
-    return _GraphProjection(
-      point: projected,
-      distance:
-          (point - projected)
-              .distance,
-      distanceAlongGraph:
-          edgeLength * t,
-      edgeFromId:
-          edge.fromId,
-      edgeToId:
-          edge.toId,
-    );
+
+
+
+return _GraphProjection(
+  point: projected,
+  distance:
+      (point - projected).distance,
+  distanceAlongGraph:
+      edgeLength * t,
+  edgeFromId: edge.fromId,
+  edgeToId: edge.toId,
+);
   }
 
   /*

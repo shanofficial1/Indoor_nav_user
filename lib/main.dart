@@ -95,6 +95,9 @@ String? destinationNodeId;
 String? destinationName;
 List<String> currentRoute = [];
 
+double routeTotalDistance = 0;
+double routeRemainingDistance = 0;
+
   // Filtered RSSI for each beacon.
   final Map<String, double> _filteredRssi = {};
 
@@ -248,15 +251,31 @@ if (estimate != null) {
     return;
   }
 
-  setState(() {
-    currentPosition =
-        estimate.position;
+ setState(() {
+  _updateSmoothPosition(
+    estimate.position,
+  );
 
-    currentNodeId =
-        estimate.nearestNodeId;
+if (destinationNodeId != null &&
+    currentRoute.isNotEmpty) {
+  final destinationNode = config!.nodes.firstWhere(
+    (node) => node.id == destinationNodeId,
+  );
 
-    currentBeaconId =
-        estimate.beaconAId;
+  final distanceToDestination =
+      (destinationNode.position -
+              estimate.position)
+          .distance;
+
+  routeRemainingDistance =
+      distanceToDestination;
+}
+
+  currentNodeId =
+      estimate.nearestNodeId;
+
+  currentBeaconId =
+      estimate.beaconAId;
 
     currentRssi =
         _filteredRssi[
@@ -374,6 +393,16 @@ if (estimate != null) {
       destinationNodeId!,
     );
 
+    routeTotalDistance =
+    _graphPositionService.calculateRouteLength(
+  config!,
+  path,
+);
+
+routeRemainingDistance =
+    routeTotalDistance;
+
+
     if (!mounted) return;
 
     setState(() {
@@ -458,7 +487,34 @@ destinationName = selectedDestination.name;
   debugPrint('NAVIGATION STOPPED');
 }
 
+void _updateSmoothPosition(
+  Offset newPosition,
+) {
+  const smoothingFactor = 0.25;
 
+  if (currentPosition == null) {
+    currentPosition = newPosition;
+    return;
+  }
+
+  final rawSmoothPosition = Offset(
+    currentPosition!.dx +
+        (newPosition.dx - currentPosition!.dx) *
+            smoothingFactor,
+    currentPosition!.dy +
+        (newPosition.dy - currentPosition!.dy) *
+            smoothingFactor,
+  );
+
+  final graphPosition =
+      _graphPositionService.constrainPositionToGraph(
+    config!,
+    currentRoute,
+    rawSmoothPosition,
+  );
+
+  currentPosition = graphPosition;
+}
   @override
   void dispose() {
     _bleSubscription?.cancel();
@@ -599,6 +655,14 @@ destinationName = selectedDestination.name;
                     Text(
                       'Destination: $destinationName',
                     ),
+                    if (destinationNodeId != null)
+  Text(
+    '${routeRemainingDistance.toStringAsFixed(1)} m remaining',
+    style: const TextStyle(
+      fontSize: 13,
+      fontWeight: FontWeight.w500,
+    ),
+  ),
                  if (currentRoute.isNotEmpty &&
     currentRoute.length == 1)
   const Text(
